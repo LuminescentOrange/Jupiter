@@ -1,6 +1,13 @@
 package com.project.jupiterbackend.entity.response;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+
+@JsonIgnoreProperties(ignoreUnknown = true)
+@JsonInclude(JsonInclude.Include.NON_NULL)
+@JsonDeserialize(builder = Game.Builder.class)
 
 // jackson library, 把java class map 成json
 public class Game {
@@ -9,74 +16,133 @@ public class Game {
     but it’s required for multi-word snake case and camel case conversions,
     like release_time to releaseTime.
      */
+//    @JsonProperty("name")
+//    private String name;
+//    @JsonProperty("developer")
+//    private String developer;
+//    @JsonProperty("release_time")
+//    private String releaseTime;
+//    @JsonProperty("website")
+//    private String website;
+//    @JsonProperty("price")
+//    private double price;
+//
+//    public String getName() {
+//        return name;
+//    }
+//
+//    public String getDeveloper() {
+//        return developer;
+//    }
+//
+//    public String getReleaseTime() {
+//        return releaseTime;
+//    }
+//
+//    public String getWebsite() {
+//        return website;
+//    }
+//
+//    public double getPrice() {
+//        return price;
+//    }
+//
+//    public Game(Builder builder) {
+//        this.name = builder.name;
+//        this.developer = builder.developer;
+//        this.releaseTime = builder.releaseTime;
+//        this.website = builder.website;
+//        this.price = builder.price;
+//    }
+//
+//    public static class Builder { //重复game的field
+//        private String name;
+//        private String developer;
+//        private String releaseTime;
+//        private String website;
+//        private double price;
+//
+//        public Builder setName(String name) {
+//            this.name = name;
+//            return this;
+//        }
+//
+//        public Builder setDeveloper(String developer) {
+//            this.developer = developer;
+//            return this;
+//        }
+//
+//        public Builder setReleaseTime(String releaseTime) {
+//            this.releaseTime = releaseTime;
+//            return this;
+//        }
+//
+//        public Builder setWebsite(String website) {
+//            this.website = website;
+//            return this;
+//        }
+//
+//        public Builder setPrice(double price) {
+//            this.price = price;
+//            return this;
+//        }
+//
+//        public Game build() {
+//            return new Game(this);
+//        }
+//    }
+    @JsonProperty("id")
+    private final String id;
+
     @JsonProperty("name")
-    private String name;
-    @JsonProperty("developer")
-    private String developer;
-    @JsonProperty("release_time")
-    private String releaseTime;
-    @JsonProperty("website")
-    private String website;
-    @JsonProperty("price")
-    private double price;
+    private final String name;
+
+    @JsonProperty("box_art_url")
+    private final String boxArtUrl;
+
+    private Game(Builder builder) {
+        this.id = builder.id;
+        this.name = builder.name;
+        this.boxArtUrl = builder.boxArtUrl;
+    }
+
+
+    public String getId() {
+        return id;
+    }
 
     public String getName() {
         return name;
     }
 
-    public String getDeveloper() {
-        return developer;
+    public String getBoxArtUrl() {
+        return boxArtUrl;
     }
 
-    public String getReleaseTime() {
-        return releaseTime;
-    }
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    public static class Builder { // 重复game的field，关键字匹配
+        @JsonProperty("id")
+        private String id;
 
-    public String getWebsite() {
-        return website;
-    }
-
-    public double getPrice() {
-        return price;
-    }
-
-    public Game(Builder builder) {
-        this.name = builder.name;
-        this.developer = builder.developer;
-        this.releaseTime = builder.releaseTime;
-        this.website = builder.website;
-        this.price = builder.price;
-    }
-
-    public static class Builder {
+        @JsonProperty("name")
         private String name;
-        private String developer;
-        private String releaseTime;
-        private String website;
-        private double price;
 
-        public Builder setName(String name) {
+        @JsonProperty("box_art_url")
+        private String boxArtUrl;
+
+        public Builder id(String id) {
+            this.id = id;
+            return this;
+        }
+
+        public Builder name(String name) {
             this.name = name;
             return this;
         }
 
-        public Builder setDeveloper(String developer) {
-            this.developer = developer;
-            return this;
-        }
-
-        public Builder setReleaseTime(String releaseTime) {
-            this.releaseTime = releaseTime;
-            return this;
-        }
-
-        public Builder setWebsite(String website) {
-            this.website = website;
-            return this;
-        }
-
-        public Builder setPrice(double price) {
-            this.price = price;
+        public Builder boxArtUrl(String boxArtUrl) {
+            this.boxArtUrl = boxArtUrl;
             return this;
         }
 
@@ -84,4 +150,5 @@ public class Game {
             return new Game(this);
         }
     }
+
 }
