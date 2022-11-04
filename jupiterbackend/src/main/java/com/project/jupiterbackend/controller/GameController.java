@@ -23,7 +23,21 @@ public class GameController {
     @Autowired
     private GameService gameService; //@Service里面包括了@Component，@Controller也是
 
-
+    @RequestMapping(value = "/game", method = RequestMethod.GET)
+    public void getGame(@RequestParam(value = "game_name", required = false) String gameName
+            , HttpServletResponse response) throws IOException, ServletException {
+        response.setContentType("application/json;charset=UTF-8");
+        try {
+            // Return the dedicated game information if gameName is provided in the request URL, otherwise return the top x games.
+            if (gameName != null) {
+                response.getWriter().print(new ObjectMapper().writeValueAsString(gameService.searchGame(gameName)));
+            } else {
+                response.getWriter().print(new ObjectMapper().writeValueAsString(gameService.topGames(0)));
+            }
+        } catch (TwitchException e) {
+            throw new ServletException(e);
+        }
+    }
 
     // /game?game_name=whatever
     // fetch data from url /game?game_name=whatever，game_name 这里fetch到的是whatever
@@ -46,22 +60,4 @@ public class GameController {
 //    public String search(@RequestParam(value = "lon", required = false) Double lon, @RequestParam(value = "lat", required = false) Double lat){
 //        return "hello search lat: " + lat + ", lon: " + lon;
 //    }
-
-    @RequestMapping(value = "/game", method = RequestMethod.GET)
-    public void getGame(@RequestParam(value = "game_name", required = false) String gameName, HttpServletResponse response) throws IOException, ServletException {
-        response.setContentType("application/json;charset=UTF-8");
-        try {
-            // Return the dedicated game information if gameName is provided in the request URL, otherwise return the top x games.
-            if (gameName != null) {
-                response.getWriter().print(new ObjectMapper().writeValueAsString(gameService.searchGame(gameName)));
-            } else {
-                response.getWriter().print(new ObjectMapper().writeValueAsString(gameService.topGames(0)));
-            }
-        } catch (TwitchException e) {
-            throw new ServletException(e);
-        }
-    }
-
-
-
 }

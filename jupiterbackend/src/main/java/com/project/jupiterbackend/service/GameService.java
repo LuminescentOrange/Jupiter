@@ -3,6 +3,8 @@ package com.project.jupiterbackend.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.project.jupiterbackend.entity.db.Item;
+import com.project.jupiterbackend.entity.db.ItemType;
 import com.project.jupiterbackend.entity.response.Game;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.ResponseHandler;
@@ -16,8 +18,7 @@ import org.springframework.stereotype.Service;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 @Service
 public class GameService {
@@ -25,14 +26,23 @@ public class GameService {
     //没有injection test
     //public String fakeGame(){ return "this is an example";}
 
-    private static final String TOKEN = "Bearer rt6o1i6h50vstec5maqnilyf7rlrb6";
+    private static final String TOKEN = "Bearer 11690bfyrkxyrx72oyyczeknsosg53";
     private static final String CLIENT_ID = "lan980av7jse3lo991o77xsj66u48d";
     private static final String TOP_GAME_URL = "https://api.twitch.tv/helix/games/top?first=%s";
     private static final String GAME_SEARCH_URL_TEMPLATE = "https://api.twitch.tv/helix/games?name=%s";
     private static final int DEFAULT_GAME_LIMIT = 20;
 
+    // Stream/Video/Clip Search Twitch Api
+    private static final String STREAM_SEARCH_URL_TEMPLATE = "https://api.twitch.tv/helix/streams?game_id=%s&first=%s";
+    private static final String VIDEO_SEARCH_URL_TEMPLATE = "https://api.twitch.tv/helix/videos?game_id=%s&first=%s";
+    private static final String CLIP_SEARCH_URL_TEMPLATE = "https://api.twitch.tv/helix/clips?game_id=%s&first=%s";
+    private static final String TWITCH_BASE_URL = "https://www.twitch.tv/";
+    private static final int DEFAULT_SEARCH_LIMIT = 20;
+
+
 
     // Build the request URL which will be used when calling Twitch APIs, e.g. https://api.twitch.tv/helix/games/top when trying to get top games.
+    // for top game and game
     private String buildGameURL(String url, String gameName, int limit) {
         if (gameName.equals("")) { //没给名，走TOP_GAME_URL，https://api.twitch.tv/helix/games/top?first=%s，limit是%s
             return String.format(url, limit);
@@ -47,6 +57,18 @@ public class GameService {
             return String.format(url, gameName);
         }
     }
+
+    // Similar to buildGameURL, build Search URL that will be used when calling Twitch API. e.g. https://api.twitch.tv/helix/clips?game_id=12924.
+    // for Stream/Video/Clip
+    private String buildSearchURL(String url, String gameId, int limit) {
+        try {
+            gameId = URLEncoder.encode(gameId, "UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+        return String.format(url, gameId, limit);
+    }
+
 
     // Send HTTP request to Twitch Backend based on the given URL, and returns the body of the HTTP response returned from Twitch backend.
     private String searchTwitch(String url) throws TwitchException { //return json content string,在callback里实现转换
@@ -120,6 +142,77 @@ public class GameService {
         }
         return null;
     }
+
+    // Similar to getGameList, convert the json data returned from Twitch to a list of Item objects.
+    private List<Item> getItemList(String data) throws TwitchException {
+        ObjectMapper mapper = new ObjectMapper();
+        try {
+            return Arrays.asList(mapper.readValue(data, Item[].class));
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+            throw new TwitchException("Failed to parse item data from Twitch API");
+        }
+    }
+
+    // Returns the top x streams based on game ID.
+    private List<Item> searchStreams(String gameId, int limit) throws TwitchException {
+        List<Item> streams = getItemList(searchTwitch(buildSearchURL(STREAM_SEARCH_URL_TEMPLATE, gameId, limit)));
+        for (Item item : streams) {
+            item.setType(ItemType.STREAM);
+            item.setUrl(TWITCH_BASE_URL + item.getBroadcasterName());
+        }
+        return streams;
+    }
+
+    // Returns the top x clips based on game ID.
+    private List<Item> searchClips(String gameId, int limit) throws TwitchException {
+        List<Item> clips = getItemList(searchTwitch(buildSearchURL(CLIP_SEARCH_URL_TEMPLATE, gameId, limit)));
+        for (Item item : clips) {
+            item.setType(ItemType.CLIP);
+        }
+        return clips;
+    }
+
+    // Returns the top x videos based on game ID.
+    private List<Item> searchVideos(String gameId, int limit) throws TwitchException {
+        List<Item> videos = getItemList(searchTwitch(buildSearchURL(VIDEO_SEARCH_URL_TEMPLATE, gameId, limit)));
+        for (Item item : videos) {
+            item.setType(ItemType.VIDEO);
+        }
+        return videos;
+    }
+
+    private List<Item> searchByType(String gameId, ItemType type, int limit) throws TwitchException {
+        List<Item> items = Collections.emptyList();
+
+        switch (type) {
+            case STREAM:
+                items = searchStreams(gameId, limit);
+                break;
+            case VIDEO:
+                items = searchVideos(gameId, limit);
+                break;
+            case CLIP:
+                items = searchClips(gameId, limit);
+                break;
+        }
+
+        // Update gameId for all items. GameId is used by recommendation function
+        for (Item item : items) {
+            item.setGameId(gameId);
+        }
+        return items;
+    }
+
+    public Map<String, List<Item>> searchItems(String gameId) throws TwitchException {
+        Map<String, List<Item>> itemMap = new HashMap<>();
+        for (ItemType type : ItemType.values()) {
+            itemMap.put(type.toString(), searchByType(gameId, type, DEFAULT_SEARCH_LIMIT));
+        }
+        return itemMap;
+    }
+
+
 
 }
 
