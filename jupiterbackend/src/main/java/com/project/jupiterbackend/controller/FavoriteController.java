@@ -25,40 +25,41 @@ public class FavoriteController {
     public void setFavoriteItem(@RequestBody FavoriteRequestBody requestBody, HttpServletRequest request, HttpServletResponse response) {
 
         // check登陆 log in
-//        HttpSession session = request.getSession(false); // 拿到登陆用户信息
-//        if (session == null) {
-//            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-//            return ;
-//        }
+        HttpSession session = request.getSession(false); // 没有session就不创建，null是没登陆
+        // 拿到登陆用户信息
+        if (session == null) {
+            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+            return ;
+        }
         // 登陆信息拿到userid
-//        String userId = (String) session.getAttribute("user_id");
-        String userId = "5678"; //hard code userid
+        String userId = (String) session.getAttribute("user_id");
+//        String userId = "5678"; //hard code userid
         favoriteService.setFavoriteItem(userId, requestBody.getFavoriteItem());
     }
 
     @RequestMapping(value = "/favorite", method = RequestMethod.DELETE)
     public void unsetFavoriteItem(@RequestBody FavoriteRequestBody requestBody, HttpServletRequest request, HttpServletResponse response) {
-//        HttpSession session = request.getSession(false);
-//        if (session == null) {
-//            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-//            return;
-//        }
-//        String userId = (String) session.getAttribute("user_id");
-        String userId = "5678"; //hard code userid
+        HttpSession session = request.getSession(false);
+        if (session == null) {
+            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+            return;
+        }
+        String userId = (String) session.getAttribute("user_id");
+//        String userId = "5678"; //hard code userid
         favoriteService.unsetFavoriteItem(userId, requestBody.getFavoriteItem().getId());
     }
 
     @RequestMapping(value = "/favorite", method = RequestMethod.GET)
     @ResponseBody
     public Map<String, List<Item>> getFavoriteItem(HttpServletRequest request, HttpServletResponse response) {
-//        HttpSession session = request.getSession(false);
-//        if (session == null) {
-//            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-//            return new HashMap<>();
-//        }
-//        String userId = (String) session.getAttribute("user_id");
-
-        String userId = "5678"; //hard code userid
+        HttpSession session = request.getSession(false);
+        if (session == null) {
+            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+            return new HashMap<>();
+        }
+        String userId = (String) session.getAttribute("user_id");
+//
+//        String userId = "5678"; //hard code userid
         return favoriteService.getFavoriteItems(userId);
     }
 }

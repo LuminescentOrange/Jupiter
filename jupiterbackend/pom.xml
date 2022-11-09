@@ -97,6 +97,13 @@
         </dependency>
         <!--hibernate, orm-->
 
+
+        <dependency>
+            <groupId>commons-codec</groupId>
+            <artifactId>commons-codec</artifactId>
+            <version>1.15</version>
+        </dependency>
+        <!--generate encrypted password-->
     </dependencies>
 
     <build>
