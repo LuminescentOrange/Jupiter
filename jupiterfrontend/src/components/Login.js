@@ -17,11 +17,12 @@ function Login({ onSuccess }) { // { onSuccess }是props, props包含什么由�
   }
  
   const onFinish = (data) => {
+    // utils一般都会用到 .then func
     login(data)
       .then((data) => {
         setDisplayModal(false)
         message.success(`Welcome back, ${data.name}`)
-        onSuccess()
+        onSuccess() //登陆成功之后执行onSuccess，也就是app.js里的signinOnSuccess
       }).catch((err) => {
         message.error(err.message)
       })

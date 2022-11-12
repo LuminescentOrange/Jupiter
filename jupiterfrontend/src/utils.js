@@ -1,5 +1,5 @@
 // client - server communication
-const SERVER_ORIGIN = '';
+const SERVER_ORIGIN = ''; //不写的话默认8080
  
 const loginUrl = `${SERVER_ORIGIN}/login`;
  
