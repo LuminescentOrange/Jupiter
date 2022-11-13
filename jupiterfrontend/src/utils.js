@@ -145,6 +145,7 @@ const getRecommendedItemsUrl = `${SERVER_ORIGIN}/recommendation`;
  
 export const getRecommendations = () => {
   return fetch(getRecommendedItemsUrl, {
+    // 不写method 默认get
     credentials: 'include',
   }).then((response) => {
     if (response.status !== 200) {
